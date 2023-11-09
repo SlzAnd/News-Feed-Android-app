@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">News Feed</string>
+    <string name="all_feeds">All Feeds</string>
+    <string name="all_groups">All groups</string>
+    <string name="saved">Saved</string>
+    <string name="no_network">No network connection</string>
 </resources>
