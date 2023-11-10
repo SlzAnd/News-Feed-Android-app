@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookmarksScreen(
     navController: NavHostController,
-    viewModel: NewsViewModel = hiltViewModel()
+    viewModel: NewsViewModel
 ) {
     val state by viewModel.state.collectAsState()
 

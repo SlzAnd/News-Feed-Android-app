@@ -1,6 +1,7 @@
 package com.example.newsfeed.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -10,22 +11,24 @@ import com.example.newsfeed.presentation.news_feed.BookmarksScreen
 import com.example.newsfeed.presentation.article.FullArticleScreen
 import com.example.newsfeed.presentation.news_feed.GroupsScreen
 import com.example.newsfeed.presentation.news_feed.NewsFeedScreen
+import com.example.newsfeed.presentation.news_feed.NewsViewModel
 
 @Composable
 fun SetupNavGraph(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: NewsViewModel = hiltViewModel()
 ) {
     NavHost(navController = navController, startDestination = BottomNavItem.AllNewsFeeds.route) {
         composable(BottomNavItem.AllNewsFeeds.route) {
-            NewsFeedScreen(navController = navController)
+            NewsFeedScreen(navController = navController, viewModel = viewModel)
         }
 
         composable(BottomNavItem.Groups.route) {
-            GroupsScreen(navController = navController)
+            GroupsScreen(navController = navController, viewModel = viewModel)
         }
 
         composable(BottomNavItem.Bookmarked.route) {
-            BookmarksScreen(navController = navController)
+            BookmarksScreen(navController = navController, viewModel = viewModel)
         }
 
         composable(

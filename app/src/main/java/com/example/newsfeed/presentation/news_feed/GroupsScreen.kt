@@ -12,6 +12,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,8 +31,10 @@ import com.example.newsfeed.ui.theme.poppinsFontFamily
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: NewsViewModel
 ) {
+    val state by viewModel.state.collectAsState()
     Scaffold(
         modifier = Modifier
             .fillMaxSize(),
@@ -67,18 +71,18 @@ fun GroupsScreen(
             ) {
                 SourceBadge(
                     source = Source.FOX_NEWS,
-                    isEnabledSource = true,
-                    onClickEvent = {}
+                    isEnabledSource = state.sources[Source.FOX_NEWS.name]!!,
+                    onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.FOX_NEWS))}
                 )
                 SourceBadge(
                     source = Source.NYT,
-                    isEnabledSource = true,
-                    onClickEvent = {}
+                    isEnabledSource = state.sources[Source.NYT.name]!!,
+                    onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.NYT))}
                 )
                 SourceBadge(
                     source = Source.DEV_UA,
-                    isEnabledSource = true,
-                    onClickEvent = {}
+                    isEnabledSource = state.sources[Source.DEV_UA.name]!!,
+                    onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.DEV_UA))}
                 )
             }
 
@@ -91,13 +95,13 @@ fun GroupsScreen(
             ) {
                 SourceBadge(
                     source = Source.THE_GUARDIAN,
-                    isEnabledSource = true,
-                    onClickEvent = {}
+                    isEnabledSource = state.sources[Source.THE_GUARDIAN.name]!!,
+                    onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.THE_GUARDIAN))}
                 )
                 SourceBadge(
                     source = Source.SKY_SPORTS,
-                    isEnabledSource = true,
-                    onClickEvent = {}
+                    isEnabledSource = state.sources[Source.SKY_SPORTS.name]!!,
+                    onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.SKY_SPORTS))}
                 )
             }
         }

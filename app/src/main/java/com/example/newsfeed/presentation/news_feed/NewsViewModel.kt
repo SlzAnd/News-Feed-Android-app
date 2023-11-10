@@ -13,7 +13,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -83,6 +82,30 @@ class NewsViewModel @Inject constructor(
             NewsScreenEvent.UpdateNewsFeed -> {
                 viewModelScope.launch(Dispatchers.IO) {
                     updateNewsFeed()
+                }
+            }
+
+            is NewsScreenEvent.AddRemoveNewsSource -> {
+                if (event.source in _sources.value) {
+                    val updatedSourceList = _sources.value.toMutableList()
+                    updatedSourceList.remove(event.source)
+                    _sources.value = updatedSourceList
+
+                    val updatedSourceMap = _state.value.sources.toMutableMap()
+                    updatedSourceMap[event.source.name] = false
+                    _state.value = _state.value.copy(
+                        sources = updatedSourceMap
+                    )
+                } else {
+                    val updatedSourceList = _sources.value.toMutableList()
+                    updatedSourceList.add(event.source)
+                    _sources.value = updatedSourceList
+
+                    val updatedSourceMap = _state.value.sources.toMutableMap()
+                    updatedSourceMap[event.source.name] = true
+                    _state.value = _state.value.copy(
+                        sources = updatedSourceMap
+                    )
                 }
             }
         }
