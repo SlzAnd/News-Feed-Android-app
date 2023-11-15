@@ -1,19 +1,20 @@
-package com.example.newsfeed.presentation.news_feed
+package com.example.newsfeed.ui.news_feed
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.newsfeed.data.datastore.StoreSettings
-import com.example.newsfeed.data.remote.FeedApi
 import com.example.newsfeed.domain.model.News
+import com.example.newsfeed.domain.model.RefreshResponse
 import com.example.newsfeed.domain.model.Source
 import com.example.newsfeed.domain.use_case.NewsUseCases
 import com.example.newsfeed.util.ConnectivityObserver
-import com.example.newsfeed.util.ConnectivityObserver.Status.*
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -28,37 +29,40 @@ import javax.inject.Inject
 @HiltViewModel
 class NewsViewModel @Inject constructor(
     private val useCases: NewsUseCases,
-    private val dataStore: StoreSettings,
+    dataStore: StoreSettings,
     val connectivityObserver: ConnectivityObserver,
 ) : ViewModel() {
 
-    private var _sourceList = Source.entries.toList()
-    private val _sources = MutableStateFlow(_sourceList)
-    private var _state: MutableStateFlow<NewsState> = MutableStateFlow(NewsState())
-    private var _lastUpdateTime: LocalDateTime? = null
+    private var allSources = Source.entries.toList()
+    private val sources = MutableStateFlow(emptyList<Source>())
+    private var lastUpdateTime: LocalDateTime? = null
 
-    private val _newsList = _sources
+    private val newsListBySources = sources
         .flatMapLatest { sourceList ->
             useCases.getNewsFromSource.invoke(sourceList)
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-    val state: StateFlow<NewsState> = combine(_state, _newsList) { state, newsList ->
-        state.copy(
-            news = newsList.sortedByDescending(News::pubDate),
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), NewsState())
+    private val allNews = useCases.getAllNews.invoke()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
+    private var _state: MutableStateFlow<NewsState> = MutableStateFlow(NewsState())
+    val state: StateFlow<NewsState> =
+        combine(_state, newsListBySources, allNews) { state, newsListBySources, allNews ->
+            state.copy(
+                news = newsListBySources.sortedByDescending(News::pubDate),
+                allNews = allNews.sortedByDescending(News::pubDate)
+            )
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), NewsState())
+
+
+    private val _scrollFlow: MutableSharedFlow<Boolean> = MutableSharedFlow()
+    val scrollFlow: SharedFlow<Boolean> = _scrollFlow
 
     init {
+        lastUpdateTime = LocalDateTime.parse(dataStore.getLastUpdateTime())
         viewModelScope.launch(Dispatchers.IO) {
-            dataStore.getLastUpdateTime().collect { timeString ->
-                _lastUpdateTime = LocalDateTime.parse(timeString)
-            }
-        }
-
-        viewModelScope.launch(Dispatchers.IO) {
-            updateNewsFeed()
+            updateNewsFeed(allSources)
         }
     }
 
@@ -70,8 +74,8 @@ class NewsViewModel @Inject constructor(
                 )
 
                 viewModelScope.launch(Dispatchers.IO) {
-                    async { useCases.updateNewsInCache.invoke(updatedNewsItem) }.await()
-                    useCases.getNewsFromSource(_sourceList).collectLatest { updatedList ->
+                    useCases.updateNewsInCache.invoke(updatedNewsItem)
+                    useCases.getNewsFromSource(sources.value).collectLatest { updatedList ->
                         _state.value = _state.value.copy(
                             news = updatedList
                         )
@@ -79,17 +83,23 @@ class NewsViewModel @Inject constructor(
                 }
             }
 
-            NewsScreenEvent.UpdateNewsFeed -> {
+            NewsScreenEvent.UpdateAllNewsFeed -> {
                 viewModelScope.launch(Dispatchers.IO) {
-                    updateNewsFeed()
+                    updateNewsFeed(allSources)
+                }
+            }
+
+            NewsScreenEvent.UpdateNewsBySourcesFeed -> {
+                viewModelScope.launch(Dispatchers.IO) {
+                    updateNewsFeed(sources.value)
                 }
             }
 
             is NewsScreenEvent.AddRemoveNewsSource -> {
-                if (event.source in _sources.value) {
-                    val updatedSourceList = _sources.value.toMutableList()
+                if (event.source in sources.value) {
+                    val updatedSourceList = sources.value.toMutableList()
                     updatedSourceList.remove(event.source)
-                    _sources.value = updatedSourceList
+                    sources.value = updatedSourceList
 
                     val updatedSourceMap = _state.value.sources.toMutableMap()
                     updatedSourceMap[event.source.name] = false
@@ -97,9 +107,9 @@ class NewsViewModel @Inject constructor(
                         sources = updatedSourceMap
                     )
                 } else {
-                    val updatedSourceList = _sources.value.toMutableList()
+                    val updatedSourceList = sources.value.toMutableList()
                     updatedSourceList.add(event.source)
-                    _sources.value = updatedSourceList
+                    sources.value = updatedSourceList
 
                     val updatedSourceMap = _state.value.sources.toMutableMap()
                     updatedSourceMap[event.source.name] = true
@@ -111,26 +121,35 @@ class NewsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun updateNewsFeed() {
+    private suspend fun updateNewsFeed(sourcesList: List<Source>) {
         _state.value = _state.value.copy(
             isLoading = true
         )
 
-        try {
-            useCases.refreshNewsFeed.invoke(_sourceList, _lastUpdateTime)
-            _state.value = _state.value.copy(
-                isError = false,
-            )
-        } catch (e: FeedApi.ApiRequestException) {
-            _state.value = _state.value.copy(
-                isError = true,
-                errorMessage = e.message ?: "API request error"
-            )
+        when (val refreshResponse = useCases.refreshNewsFeed.invoke(sourcesList, lastUpdateTime)) {
+            RefreshResponse.Success -> {
+                Log.d("TAG__", "SUCCESS refresh response")
+                _state.value = _state.value.copy(
+                    isError = false,
+                )
+            }
+
+            is RefreshResponse.Failure -> {
+                Log.d("TAG__", "FAILURE: ${refreshResponse.message}")
+                _state.value = _state.value.copy(
+                    isError = true,
+                    errorMessage = refreshResponse.message
+                )
+            }
+
+            RefreshResponse.NoNetworkConnection -> {}
         }
 
         _state.value = _state.value.copy(
             isLoading = false
         )
+
+        _scrollFlow.emit(true)
     }
 }
 

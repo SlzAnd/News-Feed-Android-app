@@ -1,4 +1,4 @@
-package com.example.newsfeed.presentation.article
+package com.example.newsfeed.ui.article
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -18,7 +18,7 @@ class ArticleViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private var _currentNews: News? = null
+    private var currentNews: News? = null
 
     private val _state = MutableStateFlow(ArticleState())
     val state: StateFlow<ArticleState> = _state
@@ -27,7 +27,7 @@ class ArticleViewModel @Inject constructor(
         savedStateHandle.get<Int>("newsId")?.let { newsId ->
             viewModelScope.launch(Dispatchers.IO) {
                 useCases.getNewsById.invoke(newsId)?.also {
-                    _currentNews = it
+                    currentNews = it
 
                     _state.value = _state.value.copy(
                         url = it.url,
@@ -39,8 +39,8 @@ class ArticleViewModel @Inject constructor(
     }
 
     fun onBookmarkClick() {
-        val isBookmarkValue = _currentNews!!.isBookmarked
-        val updatedNewsItem = _currentNews!!.copy(
+        val isBookmarkValue = currentNews!!.isBookmarked
+        val updatedNewsItem = currentNews!!.copy(
             isBookmarked = !isBookmarkValue
         )
 

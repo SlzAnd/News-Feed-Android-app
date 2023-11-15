@@ -1,4 +1,4 @@
-package com.example.newsfeed.presentation.article
+package com.example.newsfeed.ui.article
 
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
@@ -22,8 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.newsfeed.R
-import com.example.newsfeed.presentation.components.BottomNavigationBar
-import com.example.newsfeed.presentation.components.CustomTopAppBar
+import com.example.newsfeed.ui.components.BottomNavigationBar
+import com.example.newsfeed.ui.components.CustomTopAppBar
 import com.example.newsfeed.ui.theme.white_opacity_89
 import com.kevinnzou.accompanist.web.WebView
 import com.kevinnzou.accompanist.web.rememberWebViewState

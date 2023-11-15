@@ -4,5 +4,6 @@ data class NewsUseCases(
     val getNewsFromSource: GetNewsFromSource,
     val updateNewsInCache: UpdateNewsInCache,
     val refreshNewsFeed: RefreshNewsFeed,
-    val getNewsById: GetNewsById
+    val getNewsById: GetNewsById,
+    val getAllNews: GetAllNews,
 )

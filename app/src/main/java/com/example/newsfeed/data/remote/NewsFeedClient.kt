@@ -5,41 +5,24 @@ import com.example.newsfeed.domain.model.Source
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
-import org.simpleframework.xml.core.Persister
 import retrofit2.Retrofit
-import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import javax.inject.Inject
 
-class NewsFeedClient {
+class NewsFeedClient @Inject constructor(
+    private val retrofit: Retrofit
+) {
 
-    suspend fun getNewsFromSource(source: Source): List<News> {
+    suspend fun getNewsFromSource(source: Source): Result<RssFeed> {
         return withContext(Dispatchers.IO) {
-            try {
-                val retrofit = Retrofit.Builder()
-                    .baseUrl(source.baseUrl)
-                    .addConverterFactory(SimpleXmlConverterFactory.createNonStrict(Persister()))
-                    .build()
-
-                val api = retrofit.create(FeedApi::class.java)
-
-                val result = api.getFeed(source.relativeUrl)
-
-                val response = result.execute()
-                if (response.isSuccessful) {
-                    parseNewsItems(response.body()?.channel!!, source)
-                } else {
-                    throw FeedApi.ApiRequestException("Network request failed, status code: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                val message = e.message ?: "Network request failed!"
-                throw FeedApi.ApiRequestException(message)
-            }
+            val api = retrofit.create(FeedApi::class.java)
+            api.getFeed(source.baseUrl)
         }
     }
 
-    private fun parseNewsItems(channel: Channel, source: Source): List<News> {
+    fun parseNewsItems(channel: Channel, source: Source): List<News> {
         val items = ArrayList<News>()
         val itemElements: List<Item> = channel.items!!
         val formatter1 = DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm:ss 'GMT'")

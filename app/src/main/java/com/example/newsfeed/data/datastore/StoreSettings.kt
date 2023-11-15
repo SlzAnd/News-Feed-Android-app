@@ -3,12 +3,11 @@ package com.example.newsfeed.data.datastore
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDateTime
 import javax.inject.Inject
 
@@ -23,9 +22,9 @@ class StoreSettings @Inject constructor(
         val LAST_UPDATE_TIME = stringPreferencesKey("lastUpdateTime")
     }
 
-    fun getLastUpdateTime(): Flow<String> {
-        return context.dataStore.data.map { preferences ->
-            preferences[LAST_UPDATE_TIME] ?: LocalDateTime.MIN.toString()
+    fun getLastUpdateTime(): String {
+        return runBlocking {
+            context.dataStore.data.first()[LAST_UPDATE_TIME] ?: LocalDateTime.MIN.toString()
         }
     }
 

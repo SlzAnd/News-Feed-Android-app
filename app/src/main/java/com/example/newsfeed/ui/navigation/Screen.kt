@@ -1,4 +1,4 @@
-package com.example.newsfeed.presentation.navigation
+package com.example.newsfeed.ui.navigation
 
 sealed class Screen(val route: String) {
 

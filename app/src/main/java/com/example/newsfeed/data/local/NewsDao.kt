@@ -20,6 +20,9 @@ interface NewsDao {
     @Query("SELECT * FROM news WHERE news.newsSource = :source")
     fun getNewsBySource(source: Source): Flow<List<News>>
 
+    @Query("SELECT * FROM news")
+    fun getAllNews(): Flow<List<News>>
+
     @Query("SELECT * FROM news WHERE news.id = :id")
     suspend fun getNewsById(id: Int): News?
 

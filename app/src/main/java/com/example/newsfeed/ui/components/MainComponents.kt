@@ -1,4 +1,4 @@
-package com.example.newsfeed.presentation.components
+package com.example.newsfeed.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -52,7 +52,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.example.newsfeed.R
 import com.example.newsfeed.domain.model.News
 import com.example.newsfeed.domain.model.Source
-import com.example.newsfeed.presentation.navigation.BottomNavItem
+import com.example.newsfeed.ui.navigation.BottomNavItem
 import com.example.newsfeed.ui.theme.concrete
 import com.example.newsfeed.ui.theme.dustyGray
 import com.example.newsfeed.ui.theme.lightGray
@@ -162,7 +162,7 @@ fun NewsItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Card(
-            modifier = modifier
+            modifier = Modifier
                 .padding(start = 26.dp)
                 .padding(vertical = 9.dp)
                 .width(114.dp)
@@ -188,12 +188,12 @@ fun NewsItem(
         }
 
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .padding(start = 14.dp, top = 12.dp, end = 23.dp)
                 .fillMaxSize()
         ) {
             SourceBadge(
-                modifier = modifier
+                modifier = Modifier
                     .align(Alignment.End),
                 source = news.newsSource,
                 isEnabledSource = true,
@@ -209,7 +209,7 @@ fun NewsItem(
             )
 
             Row(
-                modifier = modifier
+                modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -217,7 +217,7 @@ fun NewsItem(
             ) {
 
                 Text(
-                    modifier = modifier
+                    modifier = Modifier
                         .weight(1f)
                         .fillMaxSize(),
                     text = news.title,

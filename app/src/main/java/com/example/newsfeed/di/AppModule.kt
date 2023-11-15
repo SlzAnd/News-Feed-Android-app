@@ -8,7 +8,9 @@ import com.example.newsfeed.data.datastore.StoreSettings
 import com.example.newsfeed.data.local.NewsDao
 import com.example.newsfeed.data.local.NewsDatabase
 import com.example.newsfeed.data.remote.NewsFeedClient
+import com.example.newsfeed.data.remote.ResultCallAdapterFactory
 import com.example.newsfeed.domain.repository.NewsRepository
+import com.example.newsfeed.domain.use_case.GetAllNews
 import com.example.newsfeed.domain.use_case.GetNewsById
 import com.example.newsfeed.domain.use_case.GetNewsFromSource
 import com.example.newsfeed.domain.use_case.NewsUseCases
@@ -21,6 +23,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.simpleframework.xml.core.Persister
+import retrofit2.Retrofit
+import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -29,8 +34,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideApiClient(): NewsFeedClient {
-        return NewsFeedClient()
+    fun provideApiClient(retrofit: Retrofit): NewsFeedClient {
+        return NewsFeedClient(retrofit)
     }
 
     @Provides
@@ -51,7 +56,8 @@ object AppModule {
             GetNewsFromSource(repository),
             UpdateNewsInCache(repository),
             RefreshNewsFeed(repository),
-            GetNewsById(repository)
+            GetNewsById(repository),
+            GetAllNews(repository)
         )
     }
 
@@ -81,5 +87,15 @@ object AppModule {
     @Singleton
     fun provideConnectivityObserver(@ApplicationContext context: Context): ConnectivityObserver {
         return NetworkConnectivityObserver(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRetrofitBuilder(): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://dev.ua/rss/")
+            .addConverterFactory(SimpleXmlConverterFactory.createNonStrict(Persister()))
+            .addCallAdapterFactory(ResultCallAdapterFactory())
+            .build()
     }
 }

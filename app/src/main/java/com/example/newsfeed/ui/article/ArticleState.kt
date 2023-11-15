@@ -1,4 +1,4 @@
-package com.example.newsfeed.presentation.article
+package com.example.newsfeed.ui.article
 
 data class ArticleState(
     val url: String = "",
