@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.newsfeed.domain.model.News
 
-@Database(entities = [News::class], version = 1)
+@Database(entities = [News::class], version = 1, exportSchema = true)
 @TypeConverters(Converters::class)
 abstract class NewsDatabase : RoomDatabase() {
 

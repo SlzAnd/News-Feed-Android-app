@@ -128,14 +128,12 @@ class NewsViewModel @Inject constructor(
 
         when (val refreshResponse = useCases.refreshNewsFeed.invoke(sourcesList, lastUpdateTime)) {
             RefreshResponse.Success -> {
-                Log.d("TAG__", "SUCCESS refresh response")
                 _state.value = _state.value.copy(
                     isError = false,
                 )
             }
 
             is RefreshResponse.Failure -> {
-                Log.d("TAG__", "FAILURE: ${refreshResponse.message}")
                 _state.value = _state.value.copy(
                     isError = true,
                     errorMessage = refreshResponse.message

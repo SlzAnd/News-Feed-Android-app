@@ -124,10 +124,10 @@ class NewsDaoTest {
 
         runTest {
             dao.saveNews(newsList)
-            assertThat(dao.getNewsBySource(Source.THE_GUARDIAN).first().size).isEqualTo(1)
+            assertThat(dao.getAllNews().first().size).isEqualTo(3)
 
             dao.deleteAll()
-            assertThat(dao.getNewsBySource(Source.THE_GUARDIAN).first().size).isEqualTo(0)
+            assertThat(dao.getAllNews().first().size).isEqualTo(0)
         }
     }
 }

@@ -22,6 +22,15 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("androidTest").assets.srcDir("$projectDir/schemas")
+    }
+
+    ksp {
+        arg(RoomSchemaArgProvider(File(projectDir, "schemas")))
+    }
+
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -86,6 +95,7 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     testImplementation("io.mockk:mockk-android:1.13.8")
     testImplementation("io.mockk:mockk-agent:1.13.8")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.3.1")
 
     //for UI tests
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -100,6 +110,7 @@ dependencies {
     androidTestImplementation("io.mockk:mockk-android:1.13.8")
     androidTestImplementation("io.mockk:mockk-agent:1.13.8")
     androidTestImplementation("androidx.test.uiautomator:uiautomator:2.3.0-alpha05")
+    androidTestImplementation("androidx.room:room-testing:2.6.0")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.48.1")
@@ -132,4 +143,16 @@ dependencies {
 
     // WebView
     implementation("io.github.kevinnzou:compose-webview:0.33.3")
+}
+
+
+class RoomSchemaArgProvider(
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    val schemaDir: File
+) : CommandLineArgumentProvider {
+
+    override fun asArguments(): Iterable<String> {
+        return listOf("room.schemaLocation=${schemaDir.path}")
+    }
 }

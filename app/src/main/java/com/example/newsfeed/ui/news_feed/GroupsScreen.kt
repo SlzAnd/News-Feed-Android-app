@@ -35,6 +35,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -162,6 +163,7 @@ fun GroupsScreen(
                     onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.NYT)) }
                 )
                 SourceBadge(
+                    modifier = Modifier.testTag("dev_ua_badge"),
                     source = Source.DEV_UA,
                     isEnabledSource = state.sources[Source.DEV_UA.name]!!,
                     onClickEvent = { viewModel.onEvent(NewsScreenEvent.AddRemoveNewsSource(Source.DEV_UA)) }
@@ -199,6 +201,7 @@ fun GroupsScreen(
                     items(items = state.news, key = { it.id }) { news ->
                         NewsItem(
                             modifier = Modifier
+                                .testTag("groupNewsItem")
                                 .clickable {
                                     navController.navigate(Screen.FullArticle.passUrl(news.id))
                                 },

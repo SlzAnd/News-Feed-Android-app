@@ -32,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -149,6 +150,7 @@ fun NewsFeedScreen(
                     items(items = state.allNews, key = { it.id }) { news ->
                         NewsItem(
                             modifier = Modifier
+                                .testTag("newsItem")
                                 .clickable {
                                     navController.navigate(Screen.FullArticle.passUrl(news.id))
                                 },
@@ -172,6 +174,7 @@ fun NewsFeedScreen(
                     pullRefreshState,
                     Modifier
                         .align(Alignment.TopCenter)
+                        .testTag("refreshIndicator")
                 )
 
                 if (lazyColumnState.canScrollBackward) {
