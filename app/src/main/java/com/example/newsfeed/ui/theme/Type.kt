@@ -11,7 +11,6 @@ import com.example.newsfeed.R
 val poppinsFontFamily = FontFamily(
     Font(R.font.poppins_regular, FontWeight(400)),
     Font(R.font.poppins_medium, FontWeight(500)),
-    Font(R.font.poppins_semibold, FontWeight(600)),
 )
 
 // Set of Material typography styles to start with
